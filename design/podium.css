@@ -1,0 +1,54 @@
+/* podium section container */
+.podium {
+    align-items: flex-end;
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin: 0 auto 64px;
+    max-width: 900px;
+    padding: 32px 8px;
+}
+
+.podium_block {
+    align-items: flex-start;
+    background: linear-gradient(180deg, #e2e8f0, #cbd5e1);
+    border-radius: 12px 12px 0 0;
+    border-top: 2px solid #cbd5e1;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, .06);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    padding-top: 16px;
+    position: relative;
+    width: 100%;
+}
+
+.podium_block_1 {
+    background: linear-gradient(180deg, #fef3c7, #fde68a);
+    border-top-color: #fde047;
+    height: 160px;
+}
+
+.podium_block_3 {
+    height: 96px;
+}
+
+.podium_block_2 {
+    height: 128px;
+}
+
+/* podium rank number */
+.podium_rank {
+    color: rgba(148, 163, 184, .2);
+    font-size: 96px;
+    font-weight: 900;
+    position: relative;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.podium_rank_1 {
+    color: rgba(234, 179, 8, .2);
+    font-size: 112px;
+}

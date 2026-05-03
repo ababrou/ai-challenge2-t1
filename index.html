@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Company Leader Board</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f3f4f6;
+      min-height: 100vh;
+      padding: 32px 16px 64px;
+      color: #111827;
+    }
+
+    /* ── Page heading ── */
+    .page-title {
+      max-width: 1236px;
+      margin: 0 auto 20px;
+      text-align: left;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: #111827;
+    }
+
+    /* ── Card ── */
+    .card {
+      max-width: 1236px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      overflow: hidden;
+      background: #f8fafc;
+    }
+
+    /* ── Card header ── */
+    .card-header {
+      padding: 28px 32px 20px;
+    }
+    .card-header h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    .card-header p {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    /* ── Filter section ── */
+    #filter-section {
+      padding: 16px 32px;
+    }
+
+    .filter-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+    }
+    .filter-group label { display: none; }
+    .filter-group select {
+      font-size: 0.875rem;
+      color: #374151;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 6px 28px 6px 10px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      cursor: pointer;
+    }
+    .filter-group select:focus { outline: 2px solid #3b82f6; outline-offset: 1px; }
+
+    /* ── Search bar ── */
+    .search-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      width: 16px;
+      height: 16px;
+      overflow: hidden;
+      transition: width .2s ease, opacity .2s ease;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+      color: #9ca3af;
+    }
+    .search-icon svg { flex-shrink: 0; }
+    .search-input {
+      padding: 7px 32px 7px 34px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background: #f9fafb;
+      color: #374151;
+      width: 100%;
+      transition: padding-left .2s ease;
+    }
+    .search-input:focus, .search-input:hover { outline: 2px solid #3b82f6; outline-offset: 1px; }
+    .search-wrapper:hover .search-icon,
+    .search-wrapper:focus-within .search-icon {
+      width: 0;
+      opacity: 0;
+    }
+    .search-wrapper:hover .search-input,
+    .search-wrapper:focus-within .search-input {
+      padding-left: 10px;
+    }
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #9ca3af;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 2px 4px;
+      display: none;
+    }
+    .search-clear:hover { color: #374151; }
+    .search-clear.visible { display: block; }
+
+    /* ── Podium ── */
+    #podium-section {
+      padding: 32px 32px 16px;
+    }
+    .podium {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 16px;
+    }
+    .podium-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      max-width: 220px;
+    }
+    .podium-slot.hidden { display: none; }
+
+    .podium-avatar-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .podium-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #e5e7eb;
+    }
+    .podium-slot[data-rank="1"] .podium-avatar { border-color: #f59e0b; }
+    .podium-slot[data-rank="2"] .podium-avatar { border-color: #9ca3af; }
+    .podium-slot[data-rank="3"] .podium-avatar { border-color: #9ca3af; }
+
+    .rank-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      background: #94a3b8;
+      border: 2px solid #fff;
+    }
+    .podium-slot[data-rank="1"] .rank-badge { background: #eab308; }
+    .podium-slot[data-rank="3"] .rank-badge { background: #92400e; }
+
+    .podium-info { text-align: center; }
+    .podium-name { font-size: 0.9rem; font-weight: 700; color: #111827; }
+    .podium-role { font-size: 0.72rem; color: #6b7280; margin-top: 2px; }
+
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #fff;
+      color: #3b82f6;
+      padding: 3px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-top: 6px;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+    }
+    .score-pill .star { color: #3b82f6; }
+    .podium-slot[data-rank="1"] .score-pill {
+      background: #fef3c7;
+      color: #92400e;
+      background: #fef9c3;
+      border-color: #fde047;
+    }
+    .podium-slot[data-rank="1"] .score-pill .star { color: #f59e0b; }
+
+    .podium-block {
+      width: 100%;
+      border-radius: 12px 12px 0 0;
+      border-top: 2px solid #cbd5e1;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.06);
+      background: linear-gradient(180deg, #e2e8f0, #cbd5e1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      font-size: 96px;
+      line-height: 1;
+      font-weight: 900;
+      color: rgba(148,163,184,.2);
+      user-select: none;
+    }
+    .podium-slot[data-rank="1"] .podium-block {
+      height: 160px;
+      background: linear-gradient(180deg, #fef3c7, #fde68a);
+      border-top-color: #fde047;
+      font-size: 112px;
+      color: rgba(234,179,8,.2);
+    }
+    .podium-slot[data-rank="2"] .podium-block { height: 128px; }
+    .podium-slot[data-rank="3"] .podium-block { height: 96px; font-size: 80px; }
+
+    /* ── Leaderboard list ── */
+    #leaderboard-section {
+      padding: 8px 24px 32px;
+    }
+    .lb-item {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    .lb-item:last-child { margin-bottom: 0; }
+    .lb-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.07); border-color: #d1d5db; }
+    .lb-item.expanded-item { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      background: #fff;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .lb-row:hover { background: #f9fafb; }
+    .lb-row.expanded { background: #fff; }
+    .lb-row.expanded:hover { background: #f9fafb; }
+
+    .lb-rank {
+      font-size: 1rem;
+      font-weight: 700;
+      width: 28px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .lb-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .lb-identity { flex: 1; min-width: 0; }
+    .lb-name { font-size: 0.9rem; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-role { font-size: 0.75rem; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .lb-icons { display: flex; gap: 12px; align-items: center; }
+    .lb-icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 0.70rem;
+      font-weight: 600;
+      cursor: default;
+      position: relative;
+    }
+    .lb-icon-item svg { width: 16px; height: 16px; color: #3b82f6; }
+    .lb-icon-item::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 400;
+      white-space: nowrap;
+      padding: 4px 8px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .lb-icon-item:hover::after { opacity: 1; }
+
+    .lb-divider { width: 1px; height: 32px; background: #e5e7eb; flex-shrink: 0; }
+
+    .lb-total { display: flex; flex-direction: column; align-items: center; gap: 0; white-space: nowrap; flex-shrink: 0; }
+    .lb-total-label { font-size: 0.65rem; font-weight: 700; color: #9ca3af; letter-spacing: .06em; }
+    .lb-total-count { display: flex; align-items: center; gap: 4px; }
+    .lb-total-star { color: #3b82f6; font-size: 1rem; }
+    .lb-total-score { font-size: 1rem; font-weight: 700; color: #3b82f6; }
+
+    .lb-chevron {
+      background: #dbeafe;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      color: #3b82f6;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .2s, background .15s;
+      flex-shrink: 0;
+    }
+    .lb-chevron:hover { background: #bfdbfe; }
+    .lb-chevron.up { transform: rotate(180deg); }
+
+    /* ── Activity panel ── */
+    .activity-panel {
+      padding: 0 16px;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height .3s ease, padding .3s ease;
+      background: #f8fafc;
+    }
+    .activity-panel.open {
+      max-height: 600px;
+      padding: 0 16px 16px;
+    }
+
+    .activity-heading {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #9ca3af;
+      letter-spacing: .08em;
+      padding: 12px 0 8px;
+    }
+
+    .activity-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .activity-table th {
+      text-align: left;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #9ca3af;
+      letter-spacing: .06em;
+      padding: 6px 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .activity-table td { padding: 8px 8px; border-bottom: 1px solid #f3f4f6; color: #374151; transition: background .1s; }
+    .activity-table tr:last-child td { border-bottom: none; }
+    .activity-table tbody tr:hover td { background: #f1f5f9; }
+
+    .cat-pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    td.points-positive { color: #3b82f6; font-weight: 600; }
+
+    /* ── Utility ── */
+    #podium-section.hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <h1 class="page-title" id="page-title">Company Leader Board</h1>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Leaderboard</h2>
+      <p>Top performers based on contributions and activity</p>
+    </div>
+
+    <!-- Filters + Search -->
+    <div id="filter-section">
+      <div class="filter-card">
+        <div class="filter-group">
+          <label for="filter-year">Year</label>
+          <select id="filter-year"></select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-quarter">Quarter</label>
+          <select id="filter-quarter">
+            <option value="">All Quarters</option>
+            <option value="Q1">Q1</option>
+            <option value="Q2">Q2</option>
+            <option value="Q3">Q3</option>
+            <option value="Q4">Q4</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-category">Category</label>
+          <select id="filter-category">
+            <option value="">All Categories</option>
+            <option value="Education">Education</option>
+            <option value="Public Speaking">Public Speaking</option>
+            <option value="University Partnership">University Partnership</option>
+          </select>
+        </div>
+
+        <div class="search-wrapper">
+          <input
+            class="search-input"
+            id="search-input"
+            type="text"
+            placeholder="Search employee..."
+            autocomplete="off"
+          />
+          <span class="search-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <button class="search-clear" id="search-clear" aria-label="Clear search">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Podium -->
+    <div id="podium-section">
+      <div class="podium" id="podium">
+        <!-- slots injected by JS -->
+      </div>
+    </div>
+
+    <!-- Leaderboard list -->
+    <div id="leaderboard-section">
+      <!-- rows injected by JS -->
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
