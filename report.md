@@ -137,3 +137,5 @@ at this point (or even one step before) I could and perhaps should have done som
   - date - 2 digit month day (e.g. `08-Sep-2025` instead of `8-Sep-2025`)
   - user row should remain white when opened, activity table should have `#f8fafc` background. activity row should have `#f1f5f9` color on hover
 ```
+
+this produced a good enough result you can see by running the app
